@@ -17,15 +17,12 @@ ENDIF(MSVC)
 
 if(APPLE)
   add_compile_options("-std=c++17")
-  set(CMAKE_CXX_FLAGS "-lstdc++fs")
+  #set(CMAKE_CXX_FLAGS "-lstdc++fs")
 endif()
 
 if(NO_LUA)
   add_definitions("-DNO_LUA")
 endif()
-
-set(CPACK_STRIP_FILES 1)
-set(CMAKE_CXX_FLAGS "-O3")
 
 link_directories("lib")
 include_directories("lib/include" "inc")
@@ -58,20 +55,6 @@ add_executable(${PROJECT_NAME} "${SOURCES}")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
-find_package(ZLIB REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE ZLIB::ZLIB)
-
-add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
-set(OPENSSL_USE_STATIC_LIBS TRUE)
-find_package(OpenSSL REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto)
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL)
-
-add_definitions(-DCURL_STATICLIB)
-find_package(CURL REQUIRED)
-include_directories(${CURL_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} PRIVATE CURL::libcurl)
-
 add_definitions(-DWIN32_LEAN_AND_MEAN)
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "./lib")
 add_definitions(-DBOOST_ALL_NO_LIB)
@@ -80,7 +63,7 @@ add_definitions(-DBOOST_DATE_TIME_NO_LIB)
 set(Boost_USE_STATIC_LIBS ON) 
 set(Boost_USE_MULTITHREADED ON)  
 #set(Boost_USE_STATIC_RUNTIME ON) 
-find_package(Boost REQUIRED COMPONENTS filesystem) 
+find_package(Boost REQUIRED COMPONENTS filesystem program_options) 
 
 if(Boost_FOUND)
   message("-- Found Boost libraries: ${Boost_LIBRARIES}")
