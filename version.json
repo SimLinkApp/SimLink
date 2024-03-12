@@ -1,0 +1,6 @@
+{
+    "version": "0.0.1",
+    "download_mac": "/mac/SimLink.zip",
+    "download_win": "/win/SimLinkSetup.exe",
+    "download_linux": "/linux/SimLink.zip"
+}
