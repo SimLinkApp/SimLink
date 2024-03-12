@@ -19,7 +19,11 @@ SimLink is an application designed to interface hardware (either via a serial po
 
 # Installation
 
+There are two ways to install SimLink. Either from a binary, or build from source. If you don't know which one you want, just download the binary.
+
 ## From Binary
+
+Download the latest [Release](https://github.com/SimLinkApp/SimLink/releases) for your platform and install the application.
 
 ## From Source
 
