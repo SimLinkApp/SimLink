@@ -34,8 +34,8 @@ namespace simlink
         std::unordered_map<int, std::string> inv_simconnect_event_map;
 
         /**
-     * Accept a SimConnect notification ID, and translate that to a string
-     */
+         * Accept a SimConnect notification ID, and translate that to a string
+         */
         void handle_internal_simconnect_notification(int event_id, int data)
         {
             // Check if the event ID is in the mapping
@@ -52,9 +52,9 @@ namespace simlink
         }
 
         /**
-     * Much in the same way I registered a simconnect event, I am now mapping a simconnect event to an int, and registering
-     * that event in a notification for me to receive.
-     */
+         * Much in the same way I registered a simconnect event, I am now mapping a simconnect event to an int, and registering
+         * that event in a notification for me to receive.
+         */
         void register_simconnect_notification(std::string event_name)
         {
             spdlog::debug("Trying to map notification ", event_name);
@@ -69,8 +69,8 @@ namespace simlink
         }
 
         /**
-     * Accept a SimConnect event name, and register it with the SimConnect client
-     */
+         * Accept a SimConnect event name, and register it with the SimConnect client
+         */
         void register_simconnect_event(std::string event_name)
         {
             spdlog::debug("Trying to map {}", event_name);
@@ -97,8 +97,8 @@ namespace simlink
         }
 
         /**
-     * Map a client data name and data ID. Used by addons
-     */
+         * Map a client data name and data ID. Used by addons
+         */
         void simconnect_map_client_data_name(std::string data_name, int data_id)
         {
             spdlog::debug("Mapping client data name: {}, {}", data_name, data_id);
@@ -108,8 +108,8 @@ namespace simlink
         }
 
         /**
-     * Map a client data definition and data size. Used by addons
-     */
+         * Map a client data definition and data size. Used by addons
+         */
         void simconnect_add_to_client_data_definition(int data_definition, int size)
         {
             spdlog::debug("Adding client data definition: {}, {}", data_definition, size);
@@ -118,8 +118,8 @@ namespace simlink
         }
 
         /**
-     * Map a client data definition and data size. Used by addons
-     */
+         * Map a client data definition and data size. Used by addons
+         */
         void simconnect_add_to_data_definition(int data_definition, std::string data_name, SIMCONNECT_DATATYPE datatype)
         {
             spdlog::debug("Adding to data definition: {}, {}", data_name, data_definition);
@@ -138,8 +138,8 @@ namespace simlink
         }
 
         /**
-     * Trigger a SimConnect event by string name, accepting a parameter. The parameter should be 0 if it is not needed
-     */
+         * Trigger a SimConnect event by string name, accepting a parameter. The parameter should be 0 if it is not needed
+         */
         void trigger_simconnect_event(std::string event_name, int parameter)
         {
 
@@ -149,8 +149,8 @@ namespace simlink
             spdlog::info("Triggering event {} with id {} and parameter {}", event_name, event_id, parameter);
 
             /**
-         * Convert the integer ID into the SIMCONNECT_CLIENT_EVENT_ID type
-         */
+             * Convert the integer ID into the SIMCONNECT_CLIENT_EVENT_ID type
+             */
             SIMCONNECT_CLIENT_EVENT_ID sc_event_id = (SIMCONNECT_CLIENT_EVENT_ID)event_id;
 
             spdlog::debug("Event ID: {}", sc_event_id);
@@ -160,8 +160,8 @@ namespace simlink
         }
 
         /**
-     * SimConnect's dispatch process. Don't call this, SimConnect calls it whenever it's drunk enough to
-     */
+         * SimConnect's dispatch process. Don't call this, SimConnect calls it whenever it's drunk enough to
+         */
         void CALLBACK simconnect_dispatch_proc(SIMCONNECT_RECV *pData, DWORD cbData, void *pContext)
         {
 
@@ -209,11 +209,11 @@ namespace simlink
         }
 
         /**
-     * Initialize the SimConnect client
-     */
+         * Initialize the SimConnect client
+         */
         void init_simconnect_events()
         {
-            spdlog::info("Trying to connect to Prepar3D");
+            spdlog::info("Trying to connect to SimConnect");
 
             while (!SUCCEEDED(SimConnect_Open(&hSimConnect, "SimLink", NULL, 0, 0, 0)) && startup_query)
             {
@@ -221,7 +221,7 @@ namespace simlink
             }
             if (startup_query)
             {
-                spdlog::info("Connected to Prepar3D");
+                spdlog::info("Connected to SimConnect");
                 hr = SimConnect_SetNotificationGroupPriority(hSimConnect, GROUP_A, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
             }
             else
@@ -231,15 +231,15 @@ namespace simlink
         }
 
         /**
-     * Ready the SimConnect connection
-     */
+         * Ready the SimConnect connection
+         */
         void ready()
         {
         }
 
         /**
-     * Close the SimConnect client
-     */
+         * Close the SimConnect client
+         */
         void close_simconnect()
         {
             spdlog::info("Closing SimConnect");

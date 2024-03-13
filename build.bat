@@ -3,5 +3,5 @@
 rmdir /S build
 mkdir build
 cd build
-cmake -DCMAKE_TOOLCHAIN_FILE=C:/Users/Space/Documents/Programming/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+cmake -G "Visual Studio 17 2022" ..
 cmake --build . --config Release

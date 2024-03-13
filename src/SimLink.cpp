@@ -1,5 +1,6 @@
 
 #include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include <sago/platform_folders.h>
 
@@ -62,13 +63,17 @@ int main(int argc, char *argv[])
 
     const std::string file_loc = sago::getDataHome() + "/SimLink/simlink.log";
 
-    // Initialize Spdlog
-    auto file_logger = spdlog::basic_logger_mt("simlink_logger", file_loc);
-    // Write messages to logger
+    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    console_sink->set_pattern("[simlink] [%^%l%$] %v");
 
-    spdlog::set_default_logger(file_logger);
-    file_logger->flush_on(spdlog::level::info);
-    spdlog::set_pattern("[%H:%M:%S %z] [thread %t] [%l] %v");
+    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(file_loc, true);
+
+    std::shared_ptr<spdlog::logger> logger = std::make_shared<spdlog::logger>("simlink");
+    logger->sinks().push_back(console_sink);
+    logger->sinks().push_back(file_sink);
+    logger->flush_on(spdlog::level::info);
+
+    spdlog::set_default_logger(logger);
 
     spdlog::info("********************************");
     spdlog::info("*** Application is starting! ***");
@@ -78,7 +83,9 @@ int main(int argc, char *argv[])
     {
         spdlog::info("Setting log level to debug");
         spdlog::set_level(spdlog::level::debug); // Set global log level to debug
-        file_logger->flush_on(spdlog::level::debug);
+        file_sink->set_level(spdlog::level::debug);
+        console_sink->set_level(spdlog::level::debug);
+        logger->flush_on(spdlog::level::debug);
     }
 
     // Load the configuration from the file into memory

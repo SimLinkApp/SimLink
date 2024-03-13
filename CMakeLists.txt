@@ -102,7 +102,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	target_link_libraries(${PROJECT_NAME} PRIVATE "${_CoreServices_FRAMEWORK}")
 endif()
 
-if(WIN32)
+if(MSVC)
   target_link_libraries(${PROJECT_NAME} PRIVATE SimConnect)
 endif()
 
