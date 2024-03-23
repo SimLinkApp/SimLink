@@ -15,16 +15,30 @@ namespace simlink
             SIMULATOR_TYPE_XPLANE
         };
 
+        struct WriteEvent
+        {
+            std::string event_name;
+            std::string sim_event_name;
+            std::string parameter;
+        };
+
+		struct ReadEvent
+		{
+			std::string event_name;
+            std::string sim_event_name;
+            std::string datatype;
+		};
+
         void register_write(std::string event_name, std::string sim_event_name, std::string parameter);
         void register_read(std::string event_name, std::string sim_event_name, std::string datatype);
         void deregister_write(std::string event_name);
         void deregister_read(std::string event_name);
 
-        void internal_register_write(std::string event_name, std::string sim_event_name, std::string parameter);
-        void internal_register_read(std::string event_name, std::string sim_event_name, std::string datatype);
+        void internal_register_write(WriteEvent evt);
+        void internal_register_read(ReadEvent evt);
 
-        std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> get_all_write_mappings();
-        std::unordered_map<std::string, std::string> get_all_read_mappings();
+        std::unordered_map<std::string, std::vector<WriteEvent>> get_all_write_mappings();
+        std::unordered_map<std::string, ReadEvent> get_all_read_mappings();
 
         void write_event(std::string event_name, std::string event_value);
         void handle_read_event(std::string event_name, std::string event_value);

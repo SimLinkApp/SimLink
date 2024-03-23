@@ -218,6 +218,7 @@ namespace simlink
             while (!SUCCEEDED(SimConnect_Open(&hSimConnect, "SimLink", NULL, 0, 0, 0)) && startup_query)
             {
                 Sleep(1000);
+                spdlog::debug("Sleeping for SimConnect...");
             }
             if (startup_query)
             {
@@ -251,6 +252,7 @@ namespace simlink
         void tick()
         {
             SimConnect_CallDispatch(hSimConnect, simconnect_dispatch_proc, NULL);
+            //Sleep(10);
         }
     } // namespace simconnect_handler
 } // namespace simlink

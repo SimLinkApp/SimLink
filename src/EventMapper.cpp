@@ -25,8 +25,8 @@ namespace simlink
     namespace event_mapper
     {
 
-        std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> write_events;
-        std::unordered_map<std::string, std::string> read_events;
+        std::unordered_map<std::string, std::vector<WriteEvent>> write_events;
+        std::unordered_map<std::string, ReadEvent> read_events;
 
         SIMULATOR_TYPE simulator_type;
 
@@ -41,18 +41,23 @@ namespace simlink
         {
             spdlog::debug("Registering write: {}, {}, {}", event_name, sim_event_name, parameter);
             // Check if the event is already registered. We don't allow duplicates (yet)
-            if (simlink::map_contains(write_events, event_name))
+            if (write_events.find(event_name) != write_events.end())
             {
                 spdlog::error("Tried to register already-registered write event");
                 return;
             }
 
+            WriteEvent evt;
+            evt.event_name = event_name;
+            evt.sim_event_name = sim_event_name;
+            evt.parameter = parameter;
+
             // Add it to the write events listing
-            write_events[event_name].push_back(std::pair<std::string, std::string>(sim_event_name, parameter));
+            write_events[event_name].push_back(evt);
 
             if (resources_connected)
             {
-                internal_register_write(event_name, sim_event_name, parameter);
+                internal_register_write(evt);
             }
 
             // If it should save changes to the configuration
@@ -71,18 +76,23 @@ namespace simlink
         {
             spdlog::debug("Registering read: {}, {} ({})", event_name, sim_event_name, datatype);
             // Check if the event is already registered. We don't allow duplicates (yet)
-            if (simlink::map_contains(read_events, event_name))
+            if (read_events.find(event_name) != read_events.end())
             {
                 spdlog::error("Tried to register already-registered read event");
                 return;
             }
 
+            ReadEvent evt;
+            evt.event_name = event_name;
+            evt.sim_event_name = sim_event_name;
+            evt.datatype = datatype;
+
             // Add it to the read events listing
-            read_events[sim_event_name] = event_name;
+            read_events[sim_event_name] = evt;
 
             if (resources_connected)
             {
-                internal_register_read(event_name, sim_event_name, datatype);
+                internal_register_read(evt);
             }
 
             // If it should save changes to the configuration
@@ -100,7 +110,7 @@ namespace simlink
         void write_event(std::string event_name, std::string event_value)
         {
             // Check if the event exists. If not, error & return
-            if (!simlink::map_contains(write_events, event_name))
+            if (write_events.find(event_name) == write_events.end())
             {
                 spdlog::error("Tried to write nonexistent event \({}\)", event_name);
                 return;
@@ -111,20 +121,20 @@ namespace simlink
             spdlog::debug("Checking if Lua handles event");
 
             // Get the sim's list of event names from the event listing
-            std::vector<std::pair<std::string, std::string>> sim_events = write_events[event_name];
+            std::vector<WriteEvent> sim_events = write_events[event_name];
 
             // Iterate over all events received from the vector
             for (const auto elem : sim_events)
             {
-                spdlog::debug("Writing event {} --> {}:{}", event_name, elem.first, elem.second);
+                spdlog::debug("Writing event {} --> {}:{}", event_name, elem.sim_event_name, elem.parameter);
 
                 // If the event did not have an explicit value associated (wasn't overriden by Lua)
                 if (event_value == "")
                 {
                     // Then set it to the default value specified in the registered event
-                    event_value = elem.second;
+                    event_value = elem.parameter;
                 }
-                sim_write(elem.first, event_value);
+                sim_write(elem.event_name, event_value);
             }
         }
 
@@ -163,14 +173,14 @@ namespace simlink
         void handle_read_event(std::string event_name, std::string event_value)
         {
             // Check if the event exists. If not, error & return
-            if (!simlink::map_contains(read_events, event_name))
+            if (read_events.find(event_name) == read_events.end())
             {
                 spdlog::error("Tried to read nonexistent event \({}\)", event_name);
                 return;
             }
 
             // Get the device event's name from the event listing
-            std::string device_event_name = read_events[event_name];
+            std::string device_event_name = read_events[event_name].event_name;
 
             spdlog::debug("Got read event to trigger {} with value {}", device_event_name, event_value);
 
@@ -184,7 +194,7 @@ namespace simlink
         {
             spdlog::debug("Removing write event {}", event_name);
             // Check if the event exists. If not, error & return
-            if (!simlink::map_contains(write_events, event_name))
+            if (write_events.find(event_name) == write_events.end())
             {
                 spdlog::error("Tried to delete nonexistant write event");
                 return;
@@ -209,7 +219,7 @@ namespace simlink
         {
             spdlog::debug("Removing read event {}", event_name);
             // Check if the event exists. If not, error & return
-            if (!simlink::map_contains(read_events, event_name))
+            if (read_events.find(event_name) == read_events.end())
             {
                 spdlog::error("Tried to delete nonexistant read event");
                 return;
@@ -230,13 +240,13 @@ namespace simlink
         /**
          * Internally register a write. DO NOT CALL THIS UNLESS YOU ARE SURE OF WHAT YOU'RE DOING
          */
-        void internal_register_write(std::string event_name, std::string sim_event_name, std::string parameter)
+        void internal_register_write(WriteEvent evt)
         {
             switch (simulator_type)
             {
             case SIMULATOR_TYPE_SIMCONNECT:
 #if defined(_WIN32) || defined(_WIN64)
-                simlink::simconnect_handler::register_simconnect_event(sim_event_name);
+                simlink::simconnect_handler::register_simconnect_event(evt.sim_event_name);
 #endif
                 break;
             default:
@@ -247,17 +257,17 @@ namespace simlink
         /**
          * Internally register a read. DO NOT CALL THIS UNLESS YOU ARE SURE OF WHAT YOU'RE DOING
          */
-        void internal_register_read(std::string event_name, std::string sim_event_name, std::string datatype)
+        void internal_register_read(ReadEvent evt)
         {
             switch (simulator_type)
             {
             case SIMULATOR_TYPE_SIMCONNECT:
 #if defined(_WIN32) || defined(_WIN64)
-                simlink::simconnect_handler::register_simconnect_datareq(sim_event_name, datatype);
+                simlink::simconnect_handler::register_simconnect_datareq(evt.sim_event_name, evt.datatype);
 #endif
                 break;
             case SIMULATOR_TYPE_XPLANE:
-                simlink::xp::register_read(sim_event_name);
+                simlink::xp::register_read(evt.sim_event_name);
                 break;
             default:
                 break;
@@ -271,20 +281,20 @@ namespace simlink
         {
             spdlog::debug("Registering all events");
             // Iterate over the entire map
-            for (std::pair<std::string, std::vector<std::pair<std::string, std::string>>> element : write_events)
+            for (std::pair<std::string, std::vector<WriteEvent>> element : write_events)
             {
                 // Iterate over all of the mappings in the vector at that position
                 for (const auto elem : element.second)
                 {
-                    internal_register_write(element.first, elem.first, elem.second);
+                    internal_register_write(elem);
                 }
             }
             spdlog::debug("Registering all write events completed");
 
-            for (std::pair<std::string, std::string> element : read_events)
+            for (std::pair<std::string, ReadEvent> element : read_events)
             {
                 // Inverted because we go from sim name to device name
-                internal_register_read(element.second, element.first);
+                internal_register_read(element.second);
             }
             spdlog::debug("Registering all read events completed");
         }
@@ -292,13 +302,13 @@ namespace simlink
         /**
          * Get all write mappings
          */
-        std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> get_all_write_mappings()
+        std::unordered_map<std::string, std::vector<WriteEvent>> get_all_write_mappings()
         {
             spdlog::debug("All write mappings requested");
             // Create return value
-            std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> retvals;
+            std::unordered_map<std::string, std::vector<WriteEvent>> retvals;
             // Iterate over all events
-            for (std::pair<std::string, std::vector<std::pair<std::string, std::string>>> element : write_events)
+            for (std::pair<std::string, std::vector<WriteEvent>> element : write_events)
             {
                 // Store in the new return value
                 retvals[element.first] = element.second;
@@ -310,13 +320,13 @@ namespace simlink
         /**
          * Get all read mappings
          */
-        std::unordered_map<std::string, std::string> get_all_read_mappings()
+        std::unordered_map<std::string, ReadEvent> get_all_read_mappings()
         {
             spdlog::debug("All read mappings requested");
             // Create return value
-            std::unordered_map<std::string, std::string> retvals;
+            std::unordered_map<std::string, ReadEvent> retvals;
             // Iterate over all events
-            for (std::pair<std::string, std::string> element : read_events)
+            for (std::pair<std::string, ReadEvent> element : read_events)
             {
                 // Store in the new return value
                 retvals[element.first] = element.second;
