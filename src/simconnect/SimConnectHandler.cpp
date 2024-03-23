@@ -133,7 +133,7 @@ namespace simlink
 
             SIMCONNECT_DATA_REQUEST_FLAG req_flags = SIMCONNECT_DATA_REQUEST_FLAG_CHANGED;
             hr = SimConnect_RequestDataOnSimObject(hSimConnect, (DWORD)request_id, (DWORD)request_id,
-                                                   SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_SECOND,
+                                                   SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_VISUAL_FRAME,
                                                    req_flags);
         }
 
