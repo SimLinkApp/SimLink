@@ -27,6 +27,7 @@ namespace simlink
 			std::string raw_name;
 			std::string sim_name;
 			std::string parameter;
+			std::string datatype;
 		};
 
 		struct ConfigurationMappingGroup

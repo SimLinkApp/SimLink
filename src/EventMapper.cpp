@@ -8,6 +8,7 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #include "simconnect/SimConnectHandler.h"
+#include "simconnect/SimConnectDataReceiver.h"
 #endif
 
 #include "xp/xplane.h"
@@ -66,9 +67,9 @@ namespace simlink
          * Register a read event. When a write event is received with event_name, convert it
          * into a read event as sim_event_name
          */
-        void register_read(std::string event_name, std::string sim_event_name)
+        void register_read(std::string event_name, std::string sim_event_name, std::string datatype)
         {
-            spdlog::debug("Registering read: {}, {}", event_name, sim_event_name);
+            spdlog::debug("Registering read: {}, {} ({})", event_name, sim_event_name, datatype);
             // Check if the event is already registered. We don't allow duplicates (yet)
             if (simlink::map_contains(read_events, event_name))
             {
@@ -81,7 +82,7 @@ namespace simlink
 
             if (resources_connected)
             {
-                internal_register_read(event_name, sim_event_name);
+                internal_register_read(event_name, sim_event_name, datatype);
             }
 
             // If it should save changes to the configuration
@@ -101,7 +102,7 @@ namespace simlink
             // Check if the event exists. If not, error & return
             if (!simlink::map_contains(write_events, event_name))
             {
-                spdlog::error("Tried to write nonexistent event ({})", event_name);
+                spdlog::error("Tried to write nonexistent event \({}\)", event_name);
                 return;
             }
 
@@ -164,7 +165,7 @@ namespace simlink
             // Check if the event exists. If not, error & return
             if (!simlink::map_contains(read_events, event_name))
             {
-                spdlog::error("Tried to read nonexistent event ({})", event_name);
+                spdlog::error("Tried to read nonexistent event \({}\)", event_name);
                 return;
             }
 
@@ -246,13 +247,13 @@ namespace simlink
         /**
          * Internally register a read. DO NOT CALL THIS UNLESS YOU ARE SURE OF WHAT YOU'RE DOING
          */
-        void internal_register_read(std::string event_name, std::string sim_event_name)
+        void internal_register_read(std::string event_name, std::string sim_event_name, std::string datatype)
         {
             switch (simulator_type)
             {
             case SIMULATOR_TYPE_SIMCONNECT:
 #if defined(_WIN32) || defined(_WIN64)
-                // handle reads later
+                simlink::simconnect_handler::register_simconnect_datareq(sim_event_name, datatype);
 #endif
                 break;
             case SIMULATOR_TYPE_XPLANE:

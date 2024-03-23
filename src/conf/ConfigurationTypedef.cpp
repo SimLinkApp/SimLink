@@ -59,6 +59,9 @@ namespace simlink
 			{
 				j["parameter"] = c.parameter;
 			}
+			if (c.datatype != "") {
+				j["datatype"] = c.datatype;
+			}
 		}
 
 		void from_json(const nlohmann::json &j, ConfigurationMapping &c)
@@ -74,6 +77,10 @@ namespace simlink
 			if (j.contains("parameter"))
 			{
 				j.at("parameter").get_to(c.parameter);
+			}
+			if (j.contains("datatype"))
+			{
+				j.at("datatype").get_to(c.datatype);
 			}
 		}
 

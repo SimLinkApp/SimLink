@@ -35,8 +35,8 @@ namespace simlink
 			}
 
 			// Register the event as a read event in the main mapper system
-			spdlog::debug("Registering read mapping from configuration: {} --> {}", mapping->raw_name, mapping->sim_name);
-			simlink::event_mapper::register_read(mapping->raw_name, mapping->sim_name);
+			spdlog::debug("Registering read mapping from configuration: {} --> {} ({})", mapping->raw_name, mapping->sim_name, mapping->datatype);
+			simlink::event_mapper::register_read(mapping->raw_name, mapping->sim_name, mapping->datatype);
 		}
 
 		/**

@@ -15,7 +15,7 @@ namespace simlink
 
         void handle_received_simobject_data(SIMCONNECT_RECV_SIMOBJECT_DATA *data);
 
-        void register_simconnect_datareq(std::string event_name);
+        void register_simconnect_datareq(std::string event_name, std::string datatype);
     } // namespace simconnect_handler
 } // namespace simlink
 
